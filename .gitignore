@@ -1,6 +1,7 @@
 /_build
 /cover
 /deps
+/log
 erl_crash.dump
 *.ez
 *.beam
