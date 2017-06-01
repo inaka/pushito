@@ -4,6 +4,8 @@ defmodule Pushito do
   This is the main module for Pushito. Here there are the functions to connect and push to APNs.
   """
 
+  @type connection_name :: atom
+
   @doc """
   Application callback for starting Pushito.
   """
@@ -24,9 +26,17 @@ defmodule Pushito do
   @doc """
   Closes a connection by name
   """
-  @spec close(atom) :: :ok
+  @spec close(connection_name) :: :ok
   def close(connection_name) do
     Pushito.Connection.close connection_name
+  end
+
+  @doc """
+  Push notification to APNs with Provider Certificate
+  """
+  @spec push(connection_name, Pushito.Notification.t) :: Pushito.Response.t
+  def push(connection_name, notification) do
+    Pushito.Connection.push(connection_name, notification)
   end
 
 end
