@@ -14,7 +14,7 @@ defmodule Pushito.Config do
   @type type :: :cert | :token
 
   @type t :: %__MODULE__{type: type,
-                         name: atom,
+                         name: Pushito.connection_name,
                          apple_host: String.t,
                          cert_file: String.t,
                          key_file: String.t,

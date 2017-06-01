@@ -22,7 +22,7 @@ defmodule Pushito.Mixfile do
 
      # Code Analysis
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
-     {:credo, "~> 0.7.4", only: [:dev, :test]},
+     {:credo, "~> 0.7.4", only: [:dev, :test]}
     ]
   end
 end
