@@ -68,23 +68,69 @@ defmodule PushitoTest do
 
     %Pushito.Response{body: %{"reason" => "BadDeviceToken"}, headers: _, status: 400} =
       Pushito.push(connection_name, notification)
+
+    assert Pushito.close(connection_name) == :ok
+  end
+
+  test "Push Notification with Token" do
+    connection_name = :connection_token
+    config = config(connection_name, :token)
+
+    {:ok, _pid} = Pushito.connect(config)
+
+    token = Pushito.generate_token(connection_name)
+    device_id = Application.fetch_env!(:pushito, :device_id)
+
+    notification =
+      %{:aps => %{:alert => "testing push notifications with token"}}
+      |> notification(device_id)
+      |> Pushito.Notification.add_token(token)
+
+    %Pushito.Response{body: :no_body, headers: _, status: 200} =
+      Pushito.push(connection_name, notification)
+
+    assert Pushito.close(connection_name) == :ok
+  end
+
+  test "Retrieve the config from the GenServer" do
+    connection_name = :get_config_connection
+    config = config(connection_name, :cert)
+
+    {:ok, _pid} = Pushito.connect(config)
+
+    assert config == Pushito.Connection.get_config(connection_name)
+    assert Pushito.close(connection_name) == :ok
   end
 
   defp config(connection_name, type) do
+    import Pushito.Config
+
     cert_file = Application.fetch_env!(:pushito, :cert_file)
     key_file = Application.fetch_env!(:pushito, :key_file)
     apple_host = Application.fetch_env!(:pushito, :apple_host)
+    token_key_file = Application.fetch_env!(:pushito, :token_key_file)
+    token_key_id = Application.fetch_env!(:pushito, :token_key_id)
+    team_id = Application.fetch_env!(:pushito, :team_id)
 
-    %Pushito.Config{:name => connection_name,
-                    :type => type,
-                    :apple_host => apple_host,
-                    :cert_file => cert_file,
-                    :key_file => key_file}
+    new()
+    |> add_name(connection_name)
+    |> add_type(type)
+    |> add_host(apple_host)
+    |> add_cert_file(cert_file)
+    |> add_key_file(key_file)
+    |> add_token_key_file(token_key_file)
+    |> add_token_key_id(token_key_id)
+    |> add_team_id(team_id)
   end
 
   defp notification(message, device_id) do
+    import Pushito.Notification
+
     apns_topic = Application.fetch_env!(:pushito, :apns_topic)
 
-    %Pushito.Notification{:device_id => device_id, :apns_topic => apns_topic, :message => message}
+    new()
+    |> add_device_id(device_id)
+    |> add_topic(apns_topic)
+    |> add_message(message)
   end
 end

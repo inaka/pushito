@@ -17,8 +17,11 @@ defmodule Pushito.Connection do
     GenServer.start_link(__MODULE__, {config, client}, name: config.name)
   end
 
-
-  @spec push(Pushito.connection_name, Pushito.Notification.t) :: Pushito.Response.t
+  @doc """
+  Pushes the notification
+  """
+  @spec push(Pushito.connection_name, Pushito.Notification.t) ::
+    Pushito.Response.t | {:timeout, integer}
   def push(connection_name, notification) do
     stream_id = GenServer.call connection_name, {:push, notification}
 
@@ -31,6 +34,14 @@ defmodule Pushito.Connection do
   @spec close(atom) :: :ok
   def close(connection_name) do
     GenServer.call connection_name, :stop
+  end
+
+  @doc """
+  Retrieves the config associated with the connection
+  """
+  @spec get_config(Pushito.connection_name) :: Pushito.Config.t
+  def get_config(connection_name) do
+    GenServer.call connection_name, :get_config
   end
 
   ## GenServer Callbacks
@@ -50,6 +61,9 @@ defmodule Pushito.Connection do
     {:ok, stream_id} = :h2_client.send_request(state.h2_connection, headers, message)
 
     {:reply, stream_id, state}
+  end
+  def handle_call(:get_config, _from, state) do
+    {:reply, state.config, state}
   end
 
   def handle_info({:END_STREAM, stream_id}, state) do

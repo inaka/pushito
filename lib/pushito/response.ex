@@ -4,7 +4,7 @@ defmodule Pushito.Response do
   """
 
   @enforce_keys [:status, :headers, :body]
-  defstruct status: nil, headers: 0, body: 10
+  defstruct status: nil, headers: [], body: :no_body
 
   @type t :: %__MODULE__{status: integer, headers: list, body: :no_body | list}
 end
