@@ -12,17 +12,18 @@ defmodule Pushito.Mixfile do
 
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
-    [extra_applications: [:logger, :chatterbox, :poison],
+    [extra_applications: [:logger, :chatterbox, :poison, :joken],
      mod: {Pushito, []}]
   end
 
   defp deps do
     [{:chatterbox, "~> 0.4.2"},
      {:poison, "~> 3.1"},
+     {:joken, "~> 1.4"},
 
      # Code Analysis
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
-     {:credo, "~> 0.7.4", only: [:dev, :test]},
+     {:credo, "~> 0.7.4", only: [:dev, :test]}
     ]
   end
 end
