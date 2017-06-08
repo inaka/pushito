@@ -44,9 +44,19 @@ defmodule Pushito.Connection do
     GenServer.call connection_name, :get_config
   end
 
+  @doc """
+  Retrieves the http/2 process id. This is only used in tests
+  """
+  @spec get_h2_connection(Pushito.connection_name) :: pid
+  def get_h2_connection(connection_name) do
+    GenServer.call connection_name, :get_h2_connection
+  end
+
   ## GenServer Callbacks
 
   def init({config, client}) do
+    Process.flag(:trap_exit, true)
+
     {:ok, h2_connection} = h2_connection(config)
     {:ok, %State{:config => config, :client => client, :h2_connection => h2_connection}}
   end
@@ -65,6 +75,9 @@ defmodule Pushito.Connection do
   def handle_call(:get_config, _from, state) do
     {:reply, state.config, state}
   end
+  def handle_call(:get_h2_connection, _from, state) do
+    {:reply, state.h2_connection, state}
+  end
 
   def handle_info({:END_STREAM, stream_id}, state) do
     {:ok, {resp_headers, resp_body}} = :h2_client.get_response(state.h2_connection, stream_id)
@@ -79,6 +92,21 @@ defmodule Pushito.Connection do
 
     send state.client, {:apns_response, self(), stream_id, response}
 
+    {:noreply, state}
+  end
+  def handle_info({:EXIT, h2_connection, _reason}, %State{h2_connection: h2_connection} = state) do
+    :ok = :h2_client.stop h2_connection
+    send state.client, {:reconnecting, self()}
+    sleep = backoff(state.backoff, state.backoff_ceiling)
+    Process.send_after(self(), :reconnect, sleep)
+    {:noreply, %{state | backoff: state.backoff + 1}}
+  end
+  def handle_info(:reconnect, state) do
+    {:ok, h2_connection} = h2_connection(state.config)
+    send state.client, {:connection_up, self()}
+    {:noreply, %{state | backoff: 1, h2_connection: h2_connection}}
+  end
+  def handle_info(_info, state) do
     {:noreply, state}
   end
 
@@ -155,6 +183,15 @@ defmodule Pushito.Connection do
       {:apns_response, ^connection_pid, ^stream_id, response} -> response
     after
       timeout_millis -> {:timeout, stream_id}
+    end
+  end
+
+  defp backoff(backoff, ceiling) do
+    case (:math.pow(2, backoff) - 1) do
+      result when result > ceiling ->
+        ceiling
+      next_backoff ->
+        round(next_backoff)
     end
   end
 

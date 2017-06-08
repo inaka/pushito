@@ -4,7 +4,11 @@ defmodule Pushito.Connection.State do
   """
 
   @enforce_keys [:config, :client, :h2_connection]
-  defstruct config: nil, client: nil, h2_connection: nil
+  defstruct config: nil, client: nil, h2_connection: nil, backoff: 1, backoff_ceiling: 10
 
-  @type t :: %__MODULE__{config: Pushito.Config.t, client: pid, h2_connection: pid}
+  @type t :: %__MODULE__{config: Pushito.Config.t,
+                         client: pid,
+                         h2_connection: pid,
+                         backoff: integer,
+                         backoff_ceiling: integer}
 end

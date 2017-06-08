@@ -102,6 +102,29 @@ defmodule PushitoTest do
     assert Pushito.close(connection_name) == :ok
   end
 
+  test "Backoff strategy if http/2 connection goes down" do
+    connection_name = :get_backoff_connection
+    config = config(connection_name, :cert)
+
+    {:ok, connection_pid} = Pushito.connect(config)
+
+    h2_connection = Pushito.Connection.get_h2_connection connection_name
+
+    assert Process.alive?(connection_pid)
+    assert Process.alive?(h2_connection)
+
+    Process.exit(h2_connection, :reason)
+
+    assert Process.alive?(connection_pid)
+    refute Process.alive?(h2_connection)
+    assert_receive {:reconnecting, ^connection_pid}, 5000
+    assert_receive {:connection_up, ^connection_pid}, 5000
+
+    h2_connection2 = Pushito.Connection.get_h2_connection connection_name
+
+    refute h2_connection == h2_connection2
+  end
+
   defp config(connection_name, type) do
     import Pushito.Config
 
