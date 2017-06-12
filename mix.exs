@@ -10,7 +10,9 @@ defmodule Pushito.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
-     docs: docs()
+     docs: docs(),
+     description: description(),
+     package: package()
     ]
   end
 
@@ -40,5 +42,21 @@ defmodule Pushito.Mixfile do
      canonical: "http://hexdocs.pm/pushito",
      source_url: "https://github.com/inaka/pushito",
      extras: ["guides/Convert cer to pem.md"]]
+  end
+
+  defp description do
+    """
+    APNs provider for Apple Push Notification services (APNs) in Elixir. It supports the HTTP2 API.
+    """
+  end
+
+  defp package do
+    [
+      name: :pushito,
+      files: ["lib", "mix.exs", "README*", "LICENSE"],
+      maintainers: ["Inaka"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => "https://github.com/inaka/pushito"}
+    ]
   end
 end
