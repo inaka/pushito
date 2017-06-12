@@ -152,6 +152,12 @@ If the call to `Pushito.push/2` returns a `{:timeout, stream_id}` it means your 
 
 If you get a timeout it doesn't mean your notification wasn't delivered correctly for sure. If the network went down `chatterbox` (the HTTP/2 client `pushito` relies) will try to connect again and it will send the message when the network goes up. If that is the case the caller process will receive a message on its mail box with the format `{:apns_response, connection_pid, stream_id, response}` where the `connection_pid` is the connection pid (same as `Process.whereis(connection_name)`) and the `stream_id` is the notification identifier returned in the timeout tuple.
 
+## Reconnections
+
+If something unexpected happens and the `chatterbox` connection with APNs crashes `pushito` will send a message `{:reconnecting, connection_pid}` to the client process, that means `pushito` lost the connection and it is trying to reconnect. Once the connection has been recover a `{:connection_up, connection_pid}` message will be send.
+
+We implemented an Exponential Backoff strategy.
+
 ## Closing Connections
 
 Apple recommends us to keep our connections open and avoid opening and closing very often. You can check the [Best Practices for Managing Connections](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html).
