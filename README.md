@@ -21,7 +21,7 @@ Add `Pushito` to your list of dependencies:
 
 ```elixir
 def deps do
-  [{:pushito, github: "inaka/pushito"}]
+  [{:pushito, "~> 0.1.0"}]
 end
 ```
 
