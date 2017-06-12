@@ -83,6 +83,7 @@ In my case I got this:
 ## Important Links
 
 - [Online Documentation](http://hexdocs.pm/pushito)
+- [Example](guides/Example.md)
 
 ## Tests
 
