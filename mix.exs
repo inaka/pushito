@@ -1,13 +1,17 @@
 defmodule Pushito.Mixfile do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [app: :pushito,
-     version: "0.1.0",
+     version: @version,
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps()]
+     deps: deps(),
+     docs: docs()
+    ]
   end
 
   def application do
@@ -23,7 +27,18 @@ defmodule Pushito.Mixfile do
 
      # Code Analysis
      {:dialyxir, "~> 0.5", only: :dev, runtime: false},
-     {:credo, "~> 0.7.4", only: [:dev, :test]}
+     {:credo, "~> 0.7.4", only: [:dev, :test]},
+
+     # Docs
+     {:ex_doc, "~> 0.16.1", only: :dev, runtime: false}
     ]
+  end
+
+  defp docs do
+    [source_ref: "v#{@version}",
+     main: "Pushito",
+     canonical: "http://hexdocs.pm/pushito",
+     source_url: "https://github.com/inaka/pushito",
+     extras: ["guides/Convert cer to pem.md"]]
   end
 end
