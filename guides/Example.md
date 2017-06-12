@@ -181,14 +181,11 @@ def push(message) do
 end
 ```
 
-
-
 Launch `pusher`
 
 ```
 iex -S mix
 ```
-
 
 ```
 iex(1)> Pusher.create_connection
