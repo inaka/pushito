@@ -29,10 +29,4 @@ openssl pkcs12 -nocerts -out apns-dev-key.pem -in apns-dev-key.p12
 openssl rsa -in apns-dev-key.pem -out apns-dev-key-noenc.pem
 ```
 
-- Finally, you need to combine the key and cert files into a apns-dev.pem file we will use when connecting to APNS:
-
-```
-cat apns-dev-cert.pem apns-dev-key-noenc.pem > apns-dev.pem
-```
-
 It is a good idea to keep the files and give them descriptive names should you need to use them at a later date. The same process above applies when generating the production certificate.
