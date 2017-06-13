@@ -13,35 +13,37 @@ defmodule Pushito.Connection do
   Starts the connection.
   """
   @spec start_link(Config.t, pid) :: {:ok, pid}
-  def start_link(config, client) do
-    GenServer.start_link(__MODULE__, {config, client}, name: config.name)
+  def start_link(%Config{} = config, client) do
+    if config.name,
+      do: GenServer.start_link(__MODULE__, {config, client}, name: config.name),
+      else: GenServer.start_link(__MODULE__, {config, client})
   end
 
   @doc """
   Pushes the notification
   """
-  @spec push(Pushito.connection_name, Pushito.Notification.t) ::
+  @spec push(Pushito.connection_name | pid, Pushito.Notification.t) ::
     Pushito.Response.t | {:timeout, integer}
-  def push(connection_name, notification) do
-    stream_id = GenServer.call connection_name, {:push, notification}
+  def push(connection, notification) do
+    stream_id = GenServer.call connection, {:push, notification}
 
-    wait_response(connection_name, stream_id, notification.timeout)
+    wait_response(connection, stream_id, notification.timeout)
   end
 
   @doc """
   Closes a connection by name.
   """
-  @spec close(atom) :: :ok
-  def close(connection_name) do
-    GenServer.call connection_name, :stop
+  @spec close(Pushito.connection_name | pid) :: :ok
+  def close(connection) do
+    GenServer.call connection, :stop
   end
 
   @doc """
   Retrieves the config associated with the connection
   """
-  @spec get_config(Pushito.connection_name) :: Pushito.Config.t
-  def get_config(connection_name) do
-    GenServer.call connection_name, :get_config
+  @spec get_config(Pushito.connection_name | pid) :: Pushito.Config.t
+  def get_config(connection) do
+    GenServer.call connection, :get_config
   end
 
   @doc """
@@ -175,8 +177,7 @@ defmodule Pushito.Connection do
     response_body_decoded
   end
 
-  defp wait_response(connection_name, stream_id, timeout) do
-    connection_pid = Process.whereis(connection_name)
+  defp wait_response(connection_pid, stream_id, timeout) when is_pid(connection_pid) do
     timeout_millis = timeout * 1000
 
     receive do
@@ -184,6 +185,11 @@ defmodule Pushito.Connection do
     after
       timeout_millis -> {:timeout, stream_id}
     end
+  end
+  defp wait_response(connection_name, stream_id, timeout) do
+    connection_pid = Process.whereis(connection_name)
+
+    wait_response(connection_pid, stream_id, timeout)
   end
 
   defp backoff(backoff, ceiling) do

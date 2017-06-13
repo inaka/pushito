@@ -55,6 +55,31 @@ defmodule PushitoTest do
     assert Pushito.close(connection_name) == :ok
   end
 
+  test "make a connection to APNs without connection name" do
+    config = config(nil, :cert)
+
+    {:ok, pid} = Pushito.connect(config)
+
+    assert Pushito.close(pid) == :ok
+    refute Process.alive?(pid)
+  end
+
+  test "Push Notification without connection name" do
+    config = config(nil, :cert)
+    device_id = Application.fetch_env!(:pushito, :device_id)
+
+    {:ok, pid} = Pushito.connect(config)
+
+    notification =
+      %{:aps => %{:alert => "testing push notifications without connection name"}}
+      |> notification(device_id)
+
+    %Pushito.Response{body: :no_body, headers: _, status: 200} =
+      Pushito.push(pid, notification)
+
+    assert Pushito.close(pid) == :ok
+  end
+
   test "Push Notification error, bad device id" do
     connection_name = :connection_bad_wrong_device_id
     config = config(connection_name, :cert)
@@ -99,6 +124,27 @@ defmodule PushitoTest do
     {:ok, _pid} = Pushito.connect(config)
 
     assert config == Pushito.Connection.get_config(connection_name)
+    assert Pushito.close(connection_name) == :ok
+  end
+
+  test "Retrieve the config from the GenServer without connection_name" do
+    config = config(nil, :cert)
+
+    {:ok, pid} = Pushito.connect(config)
+
+    assert config == Pushito.Connection.get_config(pid)
+    assert Pushito.close(pid) == :ok
+  end
+
+  test "Generate Token" do
+    connection_name = :connection_token2
+    config = config(connection_name, :token)
+
+    {:ok, pid} = Pushito.connect(config)
+
+    _token = Pushito.generate_token(connection_name)
+    _token2 = Pushito.generate_token(pid)
+
     assert Pushito.close(connection_name) == :ok
   end
 
