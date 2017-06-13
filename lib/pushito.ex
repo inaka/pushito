@@ -28,16 +28,23 @@ defmodule Pushito do
 
   ### Mandatory Properties for both types
   - `type`: can be `:cert` or `:token`, default value is `:cert`
-  - `name`: this is the name of the connection, it must be an `:atom`
   - `apple_host`: the Apple host. Currently only `api.development.push.apple.com` or `api.push.apple.com` are available.
 
   ```elixir
   import Pushito.Config
 
   config = new()
-           |> add_name(:my_first_connection)
            |> add_type(:cert)
            |> add_host("api.development.push.apple.com")
+  ```
+
+  ### Optional Properties for both types
+  - `name`: this is the name of the connection, it must be an `:atom`. If this property is set we
+  could refer the connection by this name
+
+  ```elixir
+  config
+  |> add_name(:my_first_connection)
   ```
 
   ### Mandatory Properties for `Provider Certificate` type
@@ -68,14 +75,15 @@ defmodule Pushito do
   ```elixir
   {:ok, connection_pid} = Pushito.connect(config)
   ```
-  `connection_pid` is the connection pid. It is only needed if we want to supervise it directly.
+  `connection_pid` is the connection pid. It is needed if the connection has no name, you must refer the connection with the `connection_pid`
 
   ## Push Notifications
 
   **Important** The process which calls `Pushito.connect/1` should be the same as the one which calls `Pushito.push/2`
 
   Once we have the connection done we can start pushing messages to APNs.
-  In order to do that we will use `Pushito.push/2`. The first argument is the connection_name and the second one is the notification itself. The notification is a `Pushito.Notification` structure with the format:
+  In order to do that we will use `Pushito.push/2`. The first argument is the connection_name or the connection pid and the second one is the notification itself.
+  The notification is a `Pushito.Notification` structure with the format:
 
   ```elixir
   defstruct device_id: nil,
@@ -105,7 +113,7 @@ defmodule Pushito do
   ```
 
   ### Mandatory Properties for `Provider Authentication Tokens` type
-  - `token`: The JWT token needed for push notifications with tokens. In order to get a token we have to call `Pushito.generate_token/1` where the argument is the `connection_name`
+  - `token`: The JWT token needed for push notifications with tokens. In order to get a token we have to call `Pushito.generate_token/1` where the argument is the `connection_name` or the connection id.
 
   ```elixir
   token = Pushito.generate_token(:my_token_connection)
@@ -147,7 +155,9 @@ defmodule Pushito do
   ### Timeout
   If the call to `Pushito.push/2` returns a `{:timeout, stream_id}` it means your process exceeded the timeout time waiting for a response from APNs. That could be caused because your `timeout` should be greater, because the network went down or maybe other causes.
 
-  If you get a timeout it doesn't mean your notification wasn't delivered correctly for sure. If the network went down `chatterbox` (the HTTP/2 client `pushito` relies) will try to connect again and it will send the message when the network goes up. If that is the case the caller process will receive a message on its mail box with the format `{:apns_response, connection_pid, stream_id, response}` where the `connection_pid` is the connection pid (same as `Process.whereis(connection_name)`) and the `stream_id` is the notification identifier returned in the timeout tuple.
+  If you get a timeout it doesn't mean your notification wasn't delivered correctly for sure.
+  If the network went down `chatterbox` (the HTTP/2 client `pushito` relies) will try to connect again and it will send the message when the network goes up.
+  If that is the case the caller process will receive a message on its mail box with the format `{:apns_response, connection_pid, stream_id, response}` where the `connection_pid` is the connection pid (same as `Process.whereis(connection_name)`) and the `stream_id` is the notification identifier returned in the timeout tuple.
 
   ## Reconnections
 
@@ -159,7 +169,7 @@ defmodule Pushito do
 
   Apple recommends us to keep our connections open and avoid opening and closing very often. You can check the [Best Practices for Managing Connections](https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html).
 
-  But when closing a connection makes sense `pushito` gives us the function `Pushito.close/1` where the parameter is the connection's name. After closing a connection the name will be available for new connections again.
+  But when closing a connection makes sense `pushito` gives us the function `Pushito.close/1` where the parameter is the connection's name or pid. After closing a connection the name will be available for new connections again.
   """
 
   @type connection_name :: atom
@@ -190,7 +200,7 @@ defmodule Pushito do
   end
 
   @doc """
-  Closes a connection by connection name
+  Closes a connection by connection name or connection pid
 
   ## Example
 
@@ -200,9 +210,9 @@ defmodule Pushito do
       :ok
 
   """
-  @spec close(connection_name) :: :ok
-  def close(connection_name) do
-    Pushito.Connection.close connection_name
+  @spec close(connection_name | pid) :: :ok
+  def close(connection) do
+    Pushito.Connection.close connection
   end
 
   @doc """
@@ -211,6 +221,7 @@ defmodule Pushito do
   ## Example
 
   We need a valid `Pushito.Notification` struct before push something, you can see above how to create it.
+  The first paramente can be the connection name (if the connection has a name) or the connection pid.
 
       Pushito.push :my_connection, notification
       %Pushito.Response{body: :no_body,
@@ -233,9 +244,10 @@ defmodule Pushito do
       :ok
 
   """
-  @spec push(connection_name, Pushito.Notification.t) :: Pushito.Response.t | {:timeout, integer}
-  def push(connection_name, notification) do
-    Pushito.Connection.push(connection_name, notification)
+  @spec push(connection_name | pid, Pushito.Notification.t) ::
+    Pushito.Response.t | {:timeout, integer}
+  def push(connection, notification) do
+    Pushito.Connection.push(connection, notification)
   end
 
   @doc """
@@ -252,17 +264,17 @@ defmodule Pushito do
       |> add_token_key_id("1234567890")
       |> add_team_id("THEATEAM")
 
-  Then we can create the token with the `connection_name` as an argument:
+  Then we can create the token with the connection name or the connection pid as an argument:
 
       token = Pushito.generate_token :my_connection
       "eyJhbGciOiJFUzI1NiIsImtpZCI6IjEyMzQ1Njc4OTAiLCJ0eXAiOiJKV1QifQ.eyJleHAiOjE0OTY5NDI1NzgsImlhdCI6MTQ5NjkzNTM3OCwiaXNzIjoiVEhFQVRFQU0iLCJuYmYiOjE0OTY5MzUzNzd9.5dCjXP-JTsJaGND9MqBEnWkzBb2-Wya1wv9I0p8ljQTtdybl6Vnc3H5St88HEFMLOrFzUMhrbMy04Pg42sshMQ"
 
   """
-  @spec generate_token(connection_name) :: String.t
-  def generate_token(connection_name) do
+  @spec generate_token(connection_name | pid) :: String.t
+  def generate_token(connection) do
     import Joken
 
-    config = Pushito.Connection.get_config(connection_name)
+    config = Pushito.Connection.get_config(connection)
 
     key = JOSE.JWK.from_pem_file(config.token_key_file)
 
