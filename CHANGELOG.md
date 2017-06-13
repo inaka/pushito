@@ -1,8 +1,23 @@
 # Change Log
 
+## [0.1.1](https://github.com/inaka/pushito/tree/0.1.1) (2017-06-13)
+[Full Changelog](https://github.com/inaka/pushito/compare/0.1.0...0.1.1)
+
+**Closed issues:**
+
+- write an example [\#22](https://github.com/inaka/pushito/issues/22)
+- Create connections without name [\#17](https://github.com/inaka/pushito/issues/17)
+
+**Merged pull requests:**
+
+- \[\#17\] making connection\_name optional [\#25](https://github.com/inaka/pushito/pull/25) ([ferigis](https://github.com/ferigis))
+- Fixing broken images [\#24](https://github.com/inaka/pushito/pull/24) ([ferigis](https://github.com/ferigis))
+- \[\#22\] Example created [\#23](https://github.com/inaka/pushito/pull/23) ([ferigis](https://github.com/ferigis))
+
 ## [0.1.0](https://github.com/inaka/pushito/tree/0.1.0) (2017-06-12)
 **Closed issues:**
 
+- Version Bump to 0.1.0 [\#20](https://github.com/inaka/pushito/issues/20)
 - Deploy in Hex [\#16](https://github.com/inaka/pushito/issues/16)
 - implement backoff strategy [\#12](https://github.com/inaka/pushito/issues/12)
 - Write documentation [\#7](https://github.com/inaka/pushito/issues/7)
@@ -14,6 +29,7 @@
 
 **Merged pull requests:**
 
+- \[\#20\] Version Bump to 0.1.0 [\#21](https://github.com/inaka/pushito/pull/21) ([ferigis](https://github.com/ferigis))
 - \[\#16\] adding the needed fields in order to deploy in hex [\#19](https://github.com/inaka/pushito/pull/19) ([ferigis](https://github.com/ferigis))
 - \[\#7\] write documentation [\#18](https://github.com/inaka/pushito/pull/18) ([ferigis](https://github.com/ferigis))
 - \[\#12\] implement exponential backoff strategy [\#15](https://github.com/inaka/pushito/pull/15) ([ferigis](https://github.com/ferigis))
