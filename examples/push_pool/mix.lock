@@ -1,0 +1,10 @@
+%{"base64url": {:hex, :base64url, "0.0.1", "36a90125f5948e3afd7be97662a1504b934dd5dac78451ca6e9abf85a10286be", [:rebar], []},
+  "chatterbox": {:hex, :chatterbox, "0.4.2", "ba68296fa79f0ca31139713c688c350a26c8844e1244f1736d7845c1c72e5f87", [:rebar3], [{:hpack, "~>0.2.3", [hex: :hpack_erl, optional: false]}, {:lager, "~>3.2.4", [hex: :lager, optional: false]}]},
+  "goldrush": {:hex, :goldrush, "0.1.9", "f06e5d5f1277da5c413e84d5a2924174182fb108dabb39d5ec548b27424cd106", [:rebar3], []},
+  "hpack": {:hex, :hpack_erl, "0.2.3", "17670f83ff984ae6cd74b1c456edde906d27ff013740ee4d9efaa4f1bf999633", [:rebar3], []},
+  "joken": {:hex, :joken, "1.5.0", "42a0953e80bd933fc98a0874e156771f78bf0e92abe6c3a9c22feb6da28efb0b", [:mix], [{:jose, "~> 1.8", [hex: :jose, optional: false]}, {:plug, "~> 1.0", [hex: :plug, optional: true]}, {:poison, "~> 1.5 or ~> 2.0 or ~> 3.0", [hex: :poison, optional: true]}]},
+  "jose": {:hex, :jose, "1.8.4", "7946d1e5c03a76ac9ef42a6e6a20001d35987afd68c2107bcd8f01a84e75aa73", [:mix, :rebar3], [{:base64url, "~> 0.0.1", [hex: :base64url, optional: false]}]},
+  "lager": {:hex, :lager, "3.2.4", "a6deb74dae7927f46bd13255268308ef03eb206ec784a94eaf7c1c0f3b811615", [:rebar3], [{:goldrush, "0.1.9", [hex: :goldrush, optional: false]}]},
+  "poison": {:hex, :poison, "3.1.0", "d9eb636610e096f86f25d9a46f35a9facac35609a7591b3be3326e99a0484665", [:mix], []},
+  "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []},
+  "pushito": {:hex, :pushito, "0.1.1", "7a4a6ca9983588d33cf39c57cf8141c330cefb67e16d8e9538005c3c9b035069", [:mix], [{:chatterbox, "~> 0.4.2", [hex: :chatterbox, optional: false]}, {:joken, "~> 1.4", [hex: :joken, optional: false]}, {:poison, "~> 3.1", [hex: :poison, optional: false]}]}}

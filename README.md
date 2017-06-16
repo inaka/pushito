@@ -83,7 +83,8 @@ In my case I got this:
 ## Important Links
 
 - [Online Documentation](http://hexdocs.pm/pushito)
-- [Example](guides/Example.md)
+- [Full Example](examples/pusher/README.md)
+- [Pool of connections Example](examples/push_pool/README.md)
 
 ## Tests
 
