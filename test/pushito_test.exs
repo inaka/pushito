@@ -169,6 +169,37 @@ defmodule PushitoTest do
     h2_connection2 = Pushito.Connection.get_h2_connection connection_name
 
     refute h2_connection == h2_connection2
+
+    assert Pushito.close(connection_name) == :ok
+  end
+
+  test "Restrict calls to push for connection's opener" do
+    alias Pushito.Notification
+
+    config = config(nil, :cert)
+    test_pid = self()
+
+    spawned_pid = spawn fn ->
+      {:ok, pid} = Pushito.connect(config)
+
+      send test_pid, {self(), pid}
+    end
+
+    connection_pid =
+      receive do
+        {^spawned_pid, pid} -> pid
+      end
+
+    device_id = Application.fetch_env!(:pushito, :device_id)
+
+    notification =
+      %{:aps => %{:alert => "testing push notifications"}}
+      |> notification(device_id)
+      |> Notification.add_timeout(1)
+
+    {:error, :not_connection_owner} = Pushito.push(connection_pid, notification)
+
+    assert Pushito.close(connection_pid) == :ok
   end
 
   defp config(connection_name, type) do

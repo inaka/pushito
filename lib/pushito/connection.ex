@@ -23,11 +23,12 @@ defmodule Pushito.Connection do
   Pushes the notification
   """
   @spec push(Pushito.connection_name | pid, Pushito.Notification.t) ::
-    Pushito.Response.t | {:timeout, integer}
+    Pushito.Response.t | {:timeout, integer} | {:error, :not_connection_owner}
   def push(connection, notification) do
-    stream_id = GenServer.call connection, {:push, notification}
-
-    wait_response(connection, stream_id, notification.timeout)
+    case GenServer.call connection, {:push, notification} do
+      :not_connection_owner -> {:error, :not_connection_owner}
+      stream_id             -> wait_response(connection, stream_id, notification.timeout)
+    end
   end
 
   @doc """
@@ -66,13 +67,16 @@ defmodule Pushito.Connection do
   def handle_call(:stop, _from, state) do
     {:stop, :normal, :ok, state}
   end
-  def handle_call({:push, notification}, _from, state) do
+  def handle_call({:push, notification}, {from, _}, %State{client: from} = state) do
     headers = get_headers(state.config, notification)
     {:ok, message} = Poison.encode(notification.message)
 
     {:ok, stream_id} = :h2_client.send_request(state.h2_connection, headers, message)
 
     {:reply, stream_id, state}
+  end
+  def handle_call({:push, _}, _from, state) do
+    {:reply, :not_connection_owner, state}
   end
   def handle_call(:get_config, _from, state) do
     {:reply, state.config, state}

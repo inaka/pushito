@@ -33,9 +33,10 @@ defmodule Pushito do
   ```elixir
   import Pushito.Config
 
-  config = new()
-           |> add_type(:cert)
-           |> add_host("api.development.push.apple.com")
+  config =
+    new()
+    |> add_type(:cert)
+    |> add_host("api.development.push.apple.com")
   ```
 
   ### Optional Properties for both types
@@ -106,10 +107,11 @@ defmodule Pushito do
   ```elixir
   import Pushito.Notification
 
-  notification = new()
-                 |> add_device_id("bd5c3ad01bbe4d884bf2fe8801ed77e94a71bc2e9de937c84f745f54eb4cb2f4")
-                 |> add_topic("com.inaka.myapp")
-                 |> add_message(%{:aps => %{:alert => "you have a message!!"}})
+  notification =
+    new()
+    |> add_device_id("bd5c3ad01bbe4d884bf2fe8801ed77e94a71bc2e9de937c84f745f54eb4cb2f4")
+    |> add_topic("com.inaka.myapp")
+    |> add_message(%{:aps => %{:alert => "you have a message!!"}})
   ```
 
   ### Mandatory Properties for `Provider Authentication Tokens` type
@@ -216,12 +218,12 @@ defmodule Pushito do
   end
 
   @doc """
-  Push notification to APNs with Provider Certificate
+  Push notification to APNs
 
   ## Example
 
   We need a valid `Pushito.Notification` struct before push something, you can see above how to create it.
-  The first paramente can be the connection name (if the connection has a name) or the connection pid.
+  The first parameter can be the connection's name (if the connection has a name) or the connection's pid.
 
       Pushito.push :my_connection, notification
       %Pushito.Response{body: :no_body,
@@ -243,9 +245,13 @@ defmodule Pushito do
         headers: [{"apns-id", "AA2C383F-2222-DC0B-B4B8-BA2E8A4F46F4"}], status: 200}}
       :ok
 
+  This function can return also an error. This function only can be called by the process which started
+  the connection (it called `Pushito.connect/1` previously). If it is called by a different process it
+  will return `{:error, :not_connection_owner}`.
+
   """
   @spec push(connection_name | pid, Pushito.Notification.t) ::
-    Pushito.Response.t | {:timeout, integer}
+    Pushito.Response.t | {:timeout, integer} | {:error, :not_connection_owner}
   def push(connection, notification) do
     Pushito.Connection.push(connection, notification)
   end
